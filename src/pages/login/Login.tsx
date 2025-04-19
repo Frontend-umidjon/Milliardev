@@ -14,11 +14,9 @@ const Login = () => {
       const res = await login({ email, password }).unwrap();
       console.log("Login success:", res);
       
-      // Возможно, ты сохраняешь токен или другой payload в localStorage
-      localStorage.setItem("token", res.token); // если backend возвращает токен
+      localStorage.setItem("access_token", res.data.access_token); 
 
-      // Переход на главную страницу или в админку
-      navigate("/dashboard");
+      navigate("/");
     } catch (err) {
       console.error("Login error:", err);
     }
