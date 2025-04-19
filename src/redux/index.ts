@@ -8,7 +8,10 @@ export const store = configureStore({
     auth,
     [mainApi.reducerPath]: mainApi.reducer,
   },
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware().concat(mainApi.middleware),
 })
+
 
 // Infer the `RootState` and `AppDispatch` types from the store itself
 export type RootState = ReturnType<typeof store.getState>
