@@ -1,18 +1,27 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { useLoginMutation } from "../../redux/api/auth.api";
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [login, {isLoading , isError}] = useLoginMutation()
+  const [login, { isLoading,  }] = useLoginMutation();
+  const navigate = useNavigate();
 
-  const handleLogin = () => {
-    console.log({
-      email,
-      password
-    });
-    
+  const handleLogin = async () => {
+    try {
+      const res = await login({ email, password }).unwrap();
+      console.log("Login success:", res);
+      
+      // Возможно, ты сохраняешь токен или другой payload в localStorage
+      localStorage.setItem("token", res.token); // если backend возвращает токен
+
+      // Переход на главную страницу или в админку
+      navigate("/dashboard");
+    } catch (err) {
+      console.error("Login error:", err);
+    }
   };
 
   return (
@@ -53,14 +62,17 @@ const Login = () => {
             transition={{ type: "spring", stiffness: 300 }}
           />
 
+        
+
           <motion.button
-            className="w-full py-3 text-white bg-blue-600 rounded-lg hover:bg-blue-500 focus:outline-none"
+            className="w-full py-3 text-white bg-blue-600 rounded-lg hover:bg-blue-500 focus:outline-none disabled:bg-blue-400"
             onClick={handleLogin}
+            disabled={isLoading}
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.98 }}
             transition={{ type: "spring", stiffness: 200 }}
           >
-            Login
+            {isLoading ? "Logging in..." : "Login"}
           </motion.button>
         </motion.div>
       </div>
