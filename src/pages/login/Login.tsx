@@ -1,20 +1,23 @@
 import { useState } from "react";
+import { Alert } from "antd";
 import { motion } from "framer-motion";
 import { useLoginMutation } from "../../redux/api/auth.api";
 import { useNavigate } from "react-router-dom";
+import { FaRegEye, FaRegEyeSlash } from "react-icons/fa";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [login, { isLoading,  }] = useLoginMutation();
+  const [login, { isLoading, isError, error }] = useLoginMutation();
   const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleLogin = async () => {
     try {
       const res = await login({ email, password }).unwrap();
       console.log("Login success:", res);
-      
-      localStorage.setItem("access_token", res.data.access_token); 
+
+      localStorage.setItem("access_token", res.data.access_token);
 
       navigate("/");
     } catch (err) {
@@ -50,7 +53,7 @@ const Login = () => {
             transition={{ type: "spring", stiffness: 300 }}
           />
 
-          <motion.input
+          {/* <motion.input
             type="password"
             className="w-full p-3 mb-6 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-600"
             placeholder="Password"
@@ -58,9 +61,43 @@ const Login = () => {
             onChange={(e) => setPassword(e.target.value)}
             whileFocus={{ scale: 1.02 }}
             transition={{ type: "spring", stiffness: 300 }}
-          />
+          /> */}
 
-        
+          <div className="relative mb-6">
+            <motion.input
+              type={showPassword ? "text" : "password"}
+              className="w-full p-3 pr-10 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-600"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              whileFocus={{ scale: 1.02 }}
+              transition={{ type: "spring", stiffness: 300 }}
+            />
+            <button
+              type="button"
+              className="absolute top-3.5 right-3 text-gray-400"
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {showPassword ? <FaRegEye /> : <FaRegEyeSlash />}
+            </button>
+          </div>
+          {isError && error && (
+            <Alert
+              message={
+                "data" in error
+                  ? (error.data as any)?.message || "Login xatosi!"
+                  : "Login xatosi!"
+              }
+              style={{
+                width: "100%",
+                marginBottom: "1rem",
+                background: "#2c1618",
+                color: "white",
+                border: "red",
+              }}
+              type="error"
+            />
+          )}
 
           <motion.button
             className="w-full py-3 text-white bg-blue-600 rounded-lg hover:bg-blue-500 focus:outline-none disabled:bg-blue-400"
