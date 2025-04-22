@@ -19,7 +19,7 @@ const Login = () => {
 
       localStorage.setItem("access_token", res.data.access_token);
 
-      navigate("/");
+      navigate("/projects");
     } catch (err) {
       console.error("Login error:", err);
     }
