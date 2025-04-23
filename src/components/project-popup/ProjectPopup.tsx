@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { Modal, Form, Input, Button, Upload, message } from "antd";
+import { Modal, Form, Input, Button, Upload, message, Select } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import { RcFile, UploadChangeParam } from "antd/es/upload";
 import {
   useCreateProjectMutation,
   useUpdateProjectMutation,
 } from "../../redux/api/projects";
+import { useGetCustomersQuery } from "../../redux/api/customers.api";
 
 interface ProjectPopupProps {
   project?: any;
@@ -18,6 +19,7 @@ const ProjectPopup: React.FC<ProjectPopupProps> = ({
   onClose,
   refetch,
 }) => {
+  const { data:customers, isLoading: customersLoading } = useGetCustomersQuery({});
   const [form] = Form.useForm();
   const [file, setFile] = useState<RcFile | null>(null);
   const [fileList, setFileList] = useState<any[]>([]);
@@ -31,6 +33,7 @@ const ProjectPopup: React.FC<ProjectPopupProps> = ({
         name: project.name || "",
         description: project.description || "",
         link: project.link || "",
+        customerId: project.customerId || undefined, // <-- BU QATORNI QO‘SHING
       });
       if (project.image) {
         setFileList([
@@ -56,22 +59,14 @@ const ProjectPopup: React.FC<ProjectPopupProps> = ({
     formData.append("name", values.name || "");
     formData.append("description", values.description || "");
     formData.append("link", values.link || "");
+    formData.append("customerId", values.customerId); // 👈 BU YERGA QO‘SHILADI
 
     const lastFile =
       fileList.length > 0 && fileList[fileList.length - 1]?.originFileObj;
     if (lastFile && lastFile !== file) {
-      console.log("fileListdan fayl olindi:", lastFile);
       formData.append("image", lastFile as RcFile);
     } else if (file) {
-      console.log("Yangi rasm tanlandi:", file);
       formData.append("image", file);
-    } else {
-      console.log("Yangi rasm tanlanmadi, image maydoni yuborilmaydi");
-    }
-
-    console.log("formData tarkibi:");
-    for (let pair of formData.entries()) {
-      console.log(`${pair[0]}: ${pair[1]}`);
     }
 
     try {
@@ -87,7 +82,6 @@ const ProjectPopup: React.FC<ProjectPopupProps> = ({
         message.success("Yangi loyiha muvaffaqiyatli yaratildi");
       }
 
-      console.log("Server javobi:", response);
       refetch();
       onClose();
     } catch (error: any) {
@@ -95,6 +89,55 @@ const ProjectPopup: React.FC<ProjectPopupProps> = ({
       message.error("Loyihani saqlashda xatolik yuz berdi");
     }
   };
+
+
+  // const handleFinish = async (values: any) => {
+  //   const formData = new FormData();
+  //   formData.append("name", values.name || "");
+  //   formData.append("description", values.description || "");
+  //   formData.append("link", values.link || "");
+
+  //   const lastFile =
+  //     fileList.length > 0 && fileList[fileList.length - 1]?.originFileObj;
+  //   if (lastFile && lastFile !== file) {
+  //     console.log("fileListdan fayl olindi:", lastFile);
+  //     formData.append("image", lastFile as RcFile);
+  //   } else if (file) {
+  //     console.log("Yangi rasm tanlandi:", file);
+  //     formData.append("image", file);
+  //   } else {
+  //     console.log("Yangi rasm tanlanmadi, image maydoni yuborilmaydi");
+  //   }
+
+  //   console.log("formData tarkibi:");
+  //   for (let pair of formData.entries()) {
+  //     console.log(`${pair[0]}: ${pair[1]}`);
+  //   }
+
+  //   try {
+  //     let response;
+  //     if (project?._id) {
+  //       response = await updateProject({
+  //         id: project._id,
+  //         data: formData,
+  //       }).unwrap();
+  //       message.success("Loyiha muvaffaqiyatli yangilandi");
+  //     } else {
+  //       response = await createProject(formData).unwrap();
+  //       console.log(formData);
+  //       console.log("response", response);
+        
+  //       message.success("Yangi loyiha muvaffaqiyatli yaratildi");
+  //     }
+
+  //     console.log("Server javobi:", response);
+  //     refetch();
+  //     onClose();
+  //   } catch (error: any) {
+  //     console.error("Xatolik:", error);
+  //     message.error("Loyihani saqlashda xatolik yuz berdi");
+  //   }
+  // };
 
   const handleFileChange = (info: UploadChangeParam) => {
     console.log("Rasm o'zgardi:", info);
@@ -147,6 +190,30 @@ const ProjectPopup: React.FC<ProjectPopupProps> = ({
           >
             <Button icon={<UploadOutlined />}>Rasm tanlash</Button>
           </Upload>
+        </Form.Item>
+
+        <Form.Item
+          name="customerId"
+          label="Mijoz"
+          rules={[{ required: true, message: "Iltimos, mijozni tanlang" }]}
+        >
+          <Select
+            placeholder="Mijozni tanlang"
+            loading={customersLoading}
+            showSearch
+            optionFilterProp="children"
+            filterOption={(input, option) =>
+              (option?.label as string)
+                .toLowerCase()
+                .includes(input.toLowerCase())
+            }
+          >
+            {customers?.data?.payload.map((customer: any) => (
+              <Select.Option key={customer._id} value={customer._id}>
+                {customer.first_name} {customer.last_name}
+              </Select.Option>
+            ))}
+          </Select>
         </Form.Item>
 
         <Form.Item>

@@ -21,7 +21,7 @@ import {
   const Customers = () => {
     const { data, isLoading, refetch } = useGetCustomersQuery({});
     const [deleteCustomer] = useDeleteCustomerMutation();
-    const [updateCustomer] = useUpdateCustomerMutation();
+    const [updateCustomer] = useUpdateCustomerMutation({});
   
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingCustomer, setEditingCustomer] = useState<any>(null);
@@ -52,8 +52,8 @@ import {
       try {
         const values = await form.validateFields();
         const payload = {
-          ...values,
           id: editingCustomer._id,
+          data: values, // ✅ Bu yerda `data` alohida beriladi
         };
         await updateCustomer(payload).unwrap();
         message.success("Mijoz yangilandi");
@@ -63,6 +63,7 @@ import {
         message.error("Xatolik yuz berdi");
       }
     };
+
   
     const columns = [
       {
