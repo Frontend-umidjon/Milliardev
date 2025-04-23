@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useGetProjectsQuery } from "../../redux/api/projects";
-import { Row, Col, Spin, Typography } from "antd";
-import { RocketOutlined } from "@ant-design/icons";
+import { Row, Col, Spin, Typography, Button } from "antd";
+import { PlusOutlined, RocketOutlined } from "@ant-design/icons";
 import Project from "../../components/project/Project";
 import ProjectPopup from "../../components/project-popup/ProjectPopup";
 
@@ -37,6 +37,13 @@ const Projects: React.FC = () => {
         <RocketOutlined style={{ marginRight: 8 }} />
         Loyiha Galereyasi
       </Title>
+      <Button
+        onClick={() => setSelectedProject({})}
+        type="primary"
+        style={{ marginBottom: 24 }}
+      >
+        <PlusOutlined /> Yangi loyiha
+      </Button>
       <Row gutter={[24, 24]}>
         {projects.map((project: any) => (
           <Col
