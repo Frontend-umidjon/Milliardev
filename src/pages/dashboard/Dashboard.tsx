@@ -4,6 +4,7 @@ import { FaBars, FaUsersGear } from "react-icons/fa6";
 import { GrProjects } from "react-icons/gr";
 import { NavLink, Outlet } from "react-router-dom";
 import { useGetProfileQuery } from "../../redux/api/profile.api";
+import { CiLocationOn } from "react-icons/ci";
 
 const Dashboard = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -41,6 +42,9 @@ const Dashboard = () => {
             </NavLink>
             <NavLink to="customers" className={getNavLinkClasses}>
               <FaUsers /> Mijozlar
+            </NavLink>
+            <NavLink to="adresses" className={getNavLinkClasses}>
+              <CiLocationOn /> Manzillar
             </NavLink>
            {data?.user?.is_creator && (
               <NavLink to="admin-list" className={getNavLinkClasses}>
