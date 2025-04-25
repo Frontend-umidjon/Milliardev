@@ -1,26 +1,17 @@
 import { useState } from "react";
 import { FaUsers } from "react-icons/fa";
-import { FaBars } from "react-icons/fa6";
+import { FaBars, FaUsersGear } from "react-icons/fa6";
 import { GrProjects } from "react-icons/gr";
-import { MdLogout } from "react-icons/md";
 import { NavLink, Outlet } from "react-router-dom";
+import { useGetProfileQuery } from "../../redux/api/profile.api";
 
 const Dashboard = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-
+  const { data } = useGetProfileQuery({});
   
   const handleSidebarToggle = () => {
     setIsSidebarOpen((prev) => !prev);
   };
-
-  
-  const handleLogout = () => {
-    if (window.confirm("Are you sure you want to log out?")) {
-      localStorage.removeItem("access_token");
-      window.location.reload();
-    }
-  };
-
   
   const getNavLinkClasses = ({ isActive }: { isActive: boolean }) =>
     `flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium transition ${
@@ -51,17 +42,16 @@ const Dashboard = () => {
             <NavLink to="customers" className={getNavLinkClasses}>
               <FaUsers /> Mijozlar
             </NavLink>
+           {data?.user?.is_creator && (
+              <NavLink to="admin-list" className={getNavLinkClasses}>
+              <FaUsersGear /> Adminlar
+            </NavLink>
+           )}
           </nav>
         </div>
 
       
-        <button
-          onClick={handleLogout}
-          className="flex items-center gap-2 text-base text-gray-400 hover:text-red-400 transition"
-        >
-          <MdLogout className="text-xl" />
-          Log out
-        </button>
+      
       </aside>
 
      

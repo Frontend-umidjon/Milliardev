@@ -10,7 +10,6 @@ const { Title } = Typography;
 const Projects: React.FC = () => {
   const { data, isLoading, refetch } = useGetProjectsQuery({});
   const projects = data?.data?.payload || [];
-
   const [selectedProject, setSelectedProject] = useState<any | null>(null);
 
   const handleEdit = (project: any) => {
@@ -23,27 +22,33 @@ const Projects: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div
-        style={{ display: "flex", justifyContent: "center", marginTop: 100 }}
-      >
+      <div className="flex justify-center items-center h-[60vh]">
         <Spin size="large" tip="Loyihalar yuklanmoqda..." />
       </div>
     );
   }
 
   return (
-    <div style={{ padding: "2rem" }}>
-      <Title level={2} style={{ textAlign: "center", marginBottom: "2rem" }}>
-        <RocketOutlined style={{ marginRight: 8 }} />
-        Loyiha Galereyasi
-      </Title>
-      <Button
-        onClick={() => setSelectedProject({})}
-        type="primary"
-        style={{ marginBottom: 24 }}
-      >
-        <PlusOutlined /> Yangi loyiha
-      </Button>
+    <div className="p-6 md:p-10 bg-white rounded-2xl shadow-lg">
+      <div className="text-center mb-10">
+        <Title level={2} className="!mb-2">
+          <RocketOutlined className="mr-2 text-blue-500" />
+          Loyiha Galereyasi
+        </Title>
+        <p className="text-gray-500">Bu yerda barcha loyihalaringiz jamlangan.</p>
+      </div>
+
+      <div className="flex justify-end mb-6">
+        <Button
+          onClick={() => setSelectedProject({})}
+          type="primary"
+          icon={<PlusOutlined />}
+          className="rounded-xl"
+        >
+          Yangi loyiha
+        </Button>
+      </div>
+
       <Row gutter={[24, 24]}>
         {projects.map((project: any) => (
           <Col
@@ -52,9 +57,11 @@ const Projects: React.FC = () => {
             sm={12}
             md={8}
             lg={6}
-            style={{ display: "flex", justifyContent: "center" }}
+            className="flex justify-center"
           >
-            <Project project={project} onEdit={handleEdit} />
+            <div className="w-full max-w-xs transition-transform hover:scale-105">
+              <Project project={project} onEdit={handleEdit} />
+            </div>
           </Col>
         ))}
       </Row>

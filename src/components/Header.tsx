@@ -1,34 +1,57 @@
+import {  Dropdown, Menu, Typography, message } from "antd";
+import { DownOutlined } from "@ant-design/icons";
+import { useNavigate } from "react-router-dom";
+import { FaUser } from "react-icons/fa";
+import { useGetProfileQuery } from "../redux/api/profile.api";
+
 const Header = () => {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    if (window.confirm("Are you sure you want to log out?")) {
+      localStorage.removeItem("access_token");
+      message.success("Logged out successfully");
+      navigate("/login"); 
+    }
+  };
+  const { data } = useGetProfileQuery({});
+  const menu = (
+    <Menu
+      items={[
+        {
+          key: "1",
+          label: <span>Profil</span>,
+          onClick: () => navigate("/profile"), 
+        },
+        {
+          key: "2",
+          label: <span className="text-red-500">Chiqish</span>,
+          onClick: handleLogout,
+        },
+      ]}
+    />
+  );
+
   return (
-    <header className="flex justify-between items-center p-4 bg-gray-800 shadow-sm">
-      
+    <header className="flex justify-between items-center px-6 py-4 bg-white border-b border-gray-200">
       <div>
-        <h1 className="text-2xl font-semibold text-black">Welcome Back, Marci</h1>
-        <p className="text-sm text-gray-500">Here is the information about all your orders</p>
+        <Typography.Title level={4} className="!mb-0">
+          Assalomu alaykum {data?.user?.full_name}
+        </Typography.Title>
+        <Typography.Text type="secondary">
+          Bu yerda loyihalarni qo'shish, o'zgartirish va o'chirish uchun foydalanishingiz mumkin.
+          Admin panelga xush kelibsiz
+        </Typography.Text>
       </div>
 
-    
-      <div className="flex items-center space-x-4">
-      
-
-        
-        <div className="flex items-center space-x-2">
-          <img
-            src="https://i.pravatar.cc/40?img=3" // Заменить на нужный URL
-            alt="User Avatar"
-            className="w-8 h-8 rounded-full"
-          />
-          <span className="text-sm font-medium text-black">Marci Fumons</span>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-4 w-4 text-gray-600"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-          </svg>
-        </div>
+      <div className="flex items-center gap-3">
+        <Dropdown overlay={menu} trigger={["click"]}>
+          <div className="flex items-center gap-2 cursor-pointer">
+            <FaUser className="text-gray-500" />
+            <span className="font-medium text-gray-800">{data?.user?.full_name}</span>
+            <DownOutlined className="text-gray-500 text-sm" />
+          </div>
+        </Dropdown>
       </div>
     </header>
   );

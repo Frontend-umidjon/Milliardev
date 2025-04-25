@@ -6,7 +6,7 @@ import { logout } from '../feautures/auth.slice';
 const baseQuery = async (args: any, api: any, extraOptions: any) => {
   const { dispatch } = api;
   const rawBaseQuery = fetchBaseQuery({
-    baseUrl: "https://api.milliardev.com/",
+    baseUrl: "https://api.milliardev.com",
     prepareHeaders: (headers) => {
       const token = localStorage.getItem("access_token") as string;
       if (token) {
