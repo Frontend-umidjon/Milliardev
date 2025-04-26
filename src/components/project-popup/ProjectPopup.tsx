@@ -7,6 +7,8 @@ import {
   Upload,
   message,
   Select,
+  Switch,
+  Spin,
 } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import { RcFile, UploadChangeParam } from "antd/es/upload";
@@ -27,11 +29,15 @@ const ProjectPopup: React.FC<ProjectPopupProps> = ({
   onClose,
   refetch,
 }) => {
-  const { data: customers, isLoading: customersLoading } =
-    useGetCustomersQuery({});
+  const {
+    data: customers,
+    isLoading: customersLoading,
+    error: customersError,
+  } = useGetCustomersQuery({});
   const [form] = Form.useForm();
   const [file, setFile] = useState<RcFile | null>(null);
   const [fileList, setFileList] = useState<any[]>([]);
+  const [apiError, setApiError] = useState<string | null>(null);
 
   const [createProject, { isLoading: creating }] = useCreateProjectMutation();
   const [updateProject, { isLoading: updating }] = useUpdateProjectMutation();
@@ -43,6 +49,7 @@ const ProjectPopup: React.FC<ProjectPopupProps> = ({
         description: project.description || "",
         link: project.link || "",
         customerId: project.customerId || undefined,
+        is_done: project.is_done || false,
       });
 
       if (project.image) {
@@ -62,24 +69,28 @@ const ProjectPopup: React.FC<ProjectPopupProps> = ({
       setFile(null);
       setFileList([]);
     }
+    // Yangi forma ochilganda xatolikni tozalash
+    setApiError(null);
   }, [project, form]);
 
   const handleFinish = async (values: any) => {
-    const formData = new FormData();
-    formData.append("name", values.name || "");
-    formData.append("description", values.description || "");
-    formData.append("link", values.link || "");
-    formData.append("customerId", values.customerId);
-
-    const lastFile =
-      fileList.length > 0 && fileList[fileList.length - 1]?.originFileObj;
-    if (lastFile && lastFile !== file) {
-      formData.append("image", lastFile as RcFile);
-    } else if (file) {
-      formData.append("image", file);
-    }
-
     try {
+      setApiError(null);
+      const formData = new FormData();
+      formData.append("name", values.name || "");
+      formData.append("description", values.description || "");
+      formData.append("link", values.link || "");
+      formData.append("customerId", values.customerId);
+      formData.append("is_done", values.is_done ? "true" : "false");
+
+      const lastFile =
+        fileList.length > 0 && fileList[fileList.length - 1]?.originFileObj;
+      if (lastFile && lastFile !== file) {
+        formData.append("image", lastFile as RcFile);
+      } else if (file) {
+        formData.append("image", file);
+      }
+
       let response;
       if (project?._id) {
         response = await updateProject({
@@ -96,7 +107,25 @@ const ProjectPopup: React.FC<ProjectPopupProps> = ({
       onClose();
     } catch (error: any) {
       console.error("Xatolik:", error);
-      message.error("Loyihani saqlashda xatolik yuz berdi");
+      const errorMessage =
+        error.data?.message ||
+        error.message ||
+        "Loyihani saqlashda xatolik yuz berdi";
+
+      // Server bilan bog'lanishda xatolik bo'lsa
+      if (
+        error.name === "TypeError" ||
+        errorMessage.includes("Failed to fetch") ||
+        errorMessage.includes("network")
+      ) {
+        setApiError(
+          "Server bilan bog'lanishda xatolik yuz berdi. Internetingizni tekshiring va qayta urinib ko'ring."
+        );
+      } else {
+        setApiError(errorMessage);
+      }
+
+      message.error(errorMessage);
     }
   };
 
@@ -111,12 +140,24 @@ const ProjectPopup: React.FC<ProjectPopupProps> = ({
     }
   };
 
+  // API so'rovlari xatoliklarini tekshirish
+  useEffect(() => {
+    if (customersError) {
+      message.error("Mijozlar ro'yxatini yuklashda xatolik yuz berdi");
+    }
+  }, [customersError]);
+
+  // Yuklanish vaqtida qidirishni qayta boshlash
+  const handleRetry = () => {
+    refetch();
+  };
+
   return (
     <Modal
       open={true}
       title={
         <span style={{ fontSize: "20px", fontWeight: 600 }}>
-          {project ? "Loyihani tahrirlash" : "Yangi loyiha qo‘shish"}
+          {project ? "Loyihani tahrirlash" : "Yangi loyiha qo'shish"}
         </span>
       }
       onCancel={onClose}
@@ -124,6 +165,15 @@ const ProjectPopup: React.FC<ProjectPopupProps> = ({
       centered
       className="rounded-xl"
     >
+      {apiError && (
+        <div className="mb-4 p-3 bg-red-50 text-red-600 rounded-lg border border-red-300">
+          <p className="font-medium">{apiError}</p>
+          <Button type="link" onClick={() => setApiError(null)}>
+            Xabarni yopish
+          </Button>
+        </div>
+      )}
+
       <Form
         form={form}
         layout="vertical"
@@ -133,7 +183,9 @@ const ProjectPopup: React.FC<ProjectPopupProps> = ({
         <Form.Item
           name="name"
           label="Nomi"
-          rules={[{ required: true, message: "Iltimos, loyiha nomini kiriting" }]}
+          rules={[
+            { required: true, message: "Iltimos, loyiha nomini kiriting" },
+          ]}
         >
           <Input placeholder="Loyiha nomini kiriting" size="large" />
         </Form.Item>
@@ -168,24 +220,47 @@ const ProjectPopup: React.FC<ProjectPopupProps> = ({
           label="Mijoz"
           rules={[{ required: true, message: "Iltimos, mijozni tanlang" }]}
         >
-          <Select
-            placeholder="Mijozni tanlang"
-            loading={customersLoading}
-            showSearch
-            optionFilterProp="children"
-            size="large"
-            filterOption={(input, option) =>
-              (option?.children as string)
-                .toLowerCase()
-                .includes(input.toLowerCase())
-            }
-          >
-            {customers?.data?.payload.map((customer: any) => (
-              <Select.Option key={customer._id} value={customer._id}>
-                {customer.first_name} {customer.last_name}
-              </Select.Option>
-            ))}
-          </Select>
+          {customersLoading ? (
+            <div className="flex items-center justify-center p-4">
+              <Spin /> <span className="ml-2">Mijozlar yuklanmoqda...</span>
+            </div>
+          ) : customersError ? (
+            <div className="text-center">
+              <p className="text-red-500 mb-2">
+                Mijozlar ro'yxatini yuklab bo'lmadi
+              </p>
+              <Button type="primary" onClick={handleRetry}>
+                Qayta urinish
+              </Button>
+            </div>
+          ) : (
+            <Select
+              placeholder="Mijozni tanlang"
+              loading={customersLoading}
+              showSearch
+              optionFilterProp="label"
+              size="large"
+              filterOption={(input, option) =>
+                ((option?.label as string) || "")
+                  .toLowerCase()
+                  .includes(input.toLowerCase())
+              }
+            >
+              {customers?.data?.payload.map((customer: any) => (
+                <Select.Option
+                  key={customer._id}
+                  value={customer._id}
+                  label={`${customer.first_name} ${customer.last_name}`}
+                >
+                  {customer.first_name} {customer.last_name}
+                </Select.Option>
+              ))}
+            </Select>
+          )}
+        </Form.Item>
+
+        <Form.Item name="is_done" label="Yakunlangan" valuePropName="checked">
+          <Switch />
         </Form.Item>
 
         <Form.Item>
@@ -196,6 +271,7 @@ const ProjectPopup: React.FC<ProjectPopupProps> = ({
             size="large"
             loading={creating || updating}
             className="rounded-lg"
+            disabled={customersLoading || !!customersError}
           >
             {project ? "Saqlash" : "Yaratish"}
           </Button>
