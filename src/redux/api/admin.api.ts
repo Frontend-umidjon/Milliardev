@@ -1,5 +1,5 @@
 import { mainApi } from ".";
-import { Admin, AdminResponse } from "../../types";
+import { Admin, AdminFormValues, AdminResponse } from "../../types";
 
 export const adminApi = mainApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -22,7 +22,7 @@ export const adminApi = mainApi.injectEndpoints({
       providesTags: (_, __, id) => [{ type: "ADMIN", id }],
     }),
 
-    createAdmin: builder.mutation<Admin, Admin>({
+    createAdmin: builder.mutation<void,AdminFormValues>({
       query: (newAdmin) => ({
         url: "/api/admin",
         method: "POST",

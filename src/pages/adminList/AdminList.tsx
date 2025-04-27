@@ -61,7 +61,7 @@ const AdminList = () => {
     setSubmitting(true);
     try {
       if (editingAdmin) {
-        await updateAdmin({ id: editingAdmin._id, ...values }).unwrap();
+        await updateAdmin({ id: editingAdmin._id, data: values }).unwrap();
         message.success("Admin ma'lumotlari yangilandi!");
       } else {
         await createAdmin(values).unwrap();

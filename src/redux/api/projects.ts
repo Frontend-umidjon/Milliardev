@@ -12,7 +12,7 @@ const extendedApi = mainApi.injectEndpoints({
     }),
 
     getProjects: build.query<ProjectResponse, { is_done?: boolean } | void>({
-      query: (params) => ({
+      query: (params: { is_done?: boolean } = {}) => ({
         url: "api/projects",
         method: "GET",
         params,
