@@ -8,6 +8,7 @@ import {
 import { Card, Spin, Tag, Button, Modal, Form, Input, message, Switch } from "antd";
 import { useState } from "react";
 import { useGetProfileQuery } from "../../redux/api/profile.api";
+import { Admin, AdminFormValues} from "../../types"; 
 
 const AdminList = () => {
   const { data, isLoading, refetch } = useGetAdminsQuery();
@@ -16,7 +17,7 @@ const AdminList = () => {
   const [updateAdmin] = useUpdateAdminMutation();
   const { data: profileData } = useGetProfileQuery({});
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingAdmin, setEditingAdmin] = useState<any>(null);
+  const [editingAdmin, setEditingAdmin] = useState<Admin | null>(null); 
   const [form] = Form.useForm();
   const [submitting, setSubmitting] = useState(false);
 
@@ -30,7 +31,7 @@ const AdminList = () => {
     }
   };
 
-  const handleEdit = (admin: any) => {
+  const handleEdit = (admin: Admin) => { // Замените any на Admin
     setEditingAdmin(admin);
     form.setFieldsValue({
       full_name: admin.full_name,
@@ -54,7 +55,9 @@ const AdminList = () => {
     form.resetFields();
   };
 
-  const onFinish = async (values: any) => {
+ 
+
+  const onFinish = async (values: AdminFormValues) => { 
     setSubmitting(true);
     try {
       if (editingAdmin) {
@@ -92,7 +95,7 @@ const AdminList = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-        {data?.data?.payload?.map((admin: any) => (
+        {data?.data?.payload?.map((admin: Admin) => ( 
           <Card
             key={admin._id}
             className="bg-gray-900 text-gray-200 shadow-lg rounded-xl border border-gray-800"

@@ -1,22 +1,25 @@
 import { mainApi } from "./index";
+import { ProjectType, ProjectResponse } from "../../types";
 
 const extendedApi = mainApi.injectEndpoints({
   endpoints: (build) => ({
-    createProject: build.mutation({
+    createProject: build.mutation<ProjectType, Partial<ProjectType>>({
       query: (body) => ({
         url: "api/projects",
         method: "POST",
         body,
       }),
     }),
-    getProjects: build.query({
+
+    getProjects: build.query<ProjectResponse, { is_done?: boolean } | void>({
       query: (params) => ({
         url: "api/projects",
         method: "GET",
         params,
       }),
     }),
-    updateProject: build.mutation<any, { id: string; data: any }>({
+
+    updateProject: build.mutation<ProjectType, { id: string; data: Partial<ProjectType> }>({
       query: ({ id, data }) => ({
         url: `api/projects/${id}`,
         method: "PATCH",
@@ -27,4 +30,8 @@ const extendedApi = mainApi.injectEndpoints({
   overrideExisting: false,
 });
 
-export const { useCreateProjectMutation, useGetProjectsQuery, useUpdateProjectMutation } = extendedApi;
+export const {
+  useCreateProjectMutation,
+  useGetProjectsQuery,
+  useUpdateProjectMutation,
+} = extendedApi;

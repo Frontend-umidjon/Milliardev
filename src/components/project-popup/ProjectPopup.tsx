@@ -11,15 +11,16 @@ import {
   Spin,
 } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
-import { RcFile, UploadChangeParam } from "antd/es/upload";
+import { RcFile, UploadChangeParam, UploadFile } from "antd/es/upload";
 import {
   useCreateProjectMutation,
   useUpdateProjectMutation,
 } from "../../redux/api/projects";
 import { useGetCustomersQuery } from "../../redux/api/customers.api";
+import { CustomerType, ProjectType } from "../../types";
 
 interface ProjectPopupProps {
-  project?: any;
+  project?: ProjectType;
   onClose: () => void;
   refetch: () => void;
 }
@@ -36,7 +37,7 @@ const ProjectPopup: React.FC<ProjectPopupProps> = ({
   } = useGetCustomersQuery({});
   const [form] = Form.useForm();
   const [file, setFile] = useState<RcFile | null>(null);
-  const [fileList, setFileList] = useState<any[]>([]);
+  const [fileList, setFileList] = useState<UploadFile[]>([]);  // Убираем any
   const [apiError, setApiError] = useState<string | null>(null);
 
   const [createProject, { isLoading: creating }] = useCreateProjectMutation();
@@ -69,54 +70,72 @@ const ProjectPopup: React.FC<ProjectPopupProps> = ({
       setFile(null);
       setFileList([]);
     }
-    // Yangi forma ochilganda xatolikni tozalash
     setApiError(null);
   }, [project, form]);
 
-  const handleFinish = async (values: any) => {
+  const handleFinish = async (values: {
+    name: string;
+    description: string;
+    link: string;
+    customerId: string;
+    is_done: boolean;
+  }) => {  // Типизируем значения формы
     try {
       setApiError(null);
-      const formData = new FormData();
-      formData.append("name", values.name || "");
-      formData.append("description", values.description || "");
-      formData.append("link", values.link || "");
-      formData.append("customerId", values.customerId);
-      formData.append("is_done", values.is_done ? "true" : "false");
 
-      const lastFile =
-        fileList.length > 0 && fileList[fileList.length - 1]?.originFileObj;
-      if (lastFile && lastFile !== file) {
-        formData.append("image", lastFile as RcFile);
-      } else if (file) {
-        formData.append("image", file);
+      const lastFile = fileList.length > 0 && fileList[fileList.length - 1]?.originFileObj;
+      const hasNewFile = lastFile || file;
+
+      let payload: any;
+
+      if (hasNewFile) {
+        const formData = new FormData();
+        formData.append("name", values.name || "");
+        formData.append("description", values.description || "");
+        formData.append("link", values.link || "");
+        formData.append("customerId", values.customerId);
+        formData.append("is_done", values.is_done ? "true" : "false");
+
+        if (lastFile && lastFile !== file) {
+          formData.append("image", lastFile as RcFile);
+        } else if (file) {
+          formData.append("image", file);
+        }
+
+        payload = formData;
+      } else {
+        payload = {
+          name: values.name || "",
+          description: values.description || "",
+          link: values.link || "",
+          customerId: values.customerId,
+          is_done: values.is_done,
+        };
       }
 
-      let response;
       if (project?._id) {
-        response = await updateProject({
+        await updateProject({
           id: project._id,
-          data: formData,
+          data: payload,
         }).unwrap();
         message.success("Loyiha muvaffaqiyatli yangilandi");
       } else {
-        response = await createProject(formData).unwrap();
+        await createProject(payload).unwrap();
         message.success("Yangi loyiha muvaffaqiyatli yaratildi");
       }
 
       refetch();
       onClose();
-    } catch (error: any) {
-      console.error("Xatolik:", error);
+    } catch (error: unknown) {
       const errorMessage =
-        error.data?.message ||
-        error.message ||
+        (error instanceof Error && error.message) ||
         "Loyihani saqlashda xatolik yuz berdi";
 
-      // Server bilan bog'lanishda xatolik bo'lsa
       if (
-        error.name === "TypeError" ||
-        errorMessage.includes("Failed to fetch") ||
-        errorMessage.includes("network")
+        error instanceof Error &&
+        (error.name === "TypeError" ||
+          errorMessage.includes("Failed to fetch") ||
+          errorMessage.includes("network"))
       ) {
         setApiError(
           "Server bilan bog'lanishda xatolik yuz berdi. Internetingizni tekshiring va qayta urinib ko'ring."
@@ -140,14 +159,6 @@ const ProjectPopup: React.FC<ProjectPopupProps> = ({
     }
   };
 
-  // API so'rovlari xatoliklarini tekshirish
-  useEffect(() => {
-    if (customersError) {
-      message.error("Mijozlar ro'yxatini yuklashda xatolik yuz berdi");
-    }
-  }, [customersError]);
-
-  // Yuklanish vaqtida qidirishni qayta boshlash
   const handleRetry = () => {
     refetch();
   };
@@ -183,10 +194,7 @@ const ProjectPopup: React.FC<ProjectPopupProps> = ({
         <Form.Item
           name="name"
           label="Nomi"
-          rules={[
-            { required: true, message: "Iltimos, loyiha nomini kiriting" },
-          ]}
-        >
+          rules={[{ required: true, message: "Iltimos, loyiha nomini kiriting" }]}>
           <Input placeholder="Loyiha nomini kiriting" size="large" />
         </Form.Item>
 
@@ -218,8 +226,7 @@ const ProjectPopup: React.FC<ProjectPopupProps> = ({
         <Form.Item
           name="customerId"
           label="Mijoz"
-          rules={[{ required: true, message: "Iltimos, mijozni tanlang" }]}
-        >
+          rules={[{ required: true, message: "Iltimos, mijozni tanlang" }]}>
           {customersLoading ? (
             <div className="flex items-center justify-center p-4">
               <Spin /> <span className="ml-2">Mijozlar yuklanmoqda...</span>
@@ -244,9 +251,8 @@ const ProjectPopup: React.FC<ProjectPopupProps> = ({
                 ((option?.label as string) || "")
                   .toLowerCase()
                   .includes(input.toLowerCase())
-              }
-            >
-              {customers?.data?.payload.map((customer: any) => (
+              }>
+              {customers?.data?.payload.map((customer: CustomerType) => (
                 <Select.Option
                   key={customer._id}
                   value={customer._id}

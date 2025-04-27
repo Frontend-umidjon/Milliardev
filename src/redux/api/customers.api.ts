@@ -1,16 +1,24 @@
 import { mainApi } from ".";
+import { CustomerType } from "../../types"; 
+
+interface CustomerResponse {
+  data: {
+    payload: CustomerType[];
+  };
+}
 
 export const extendedApi = mainApi.injectEndpoints({
   endpoints: (builder) => ({
-    getCustomers: builder.query<any, { is_active?: boolean } | void>({   // исправлено тут
+    getCustomers: builder.query<CustomerResponse, { is_active?: boolean } | void>({
+
       query: (params) => ({
         url: "/api/customers",
         method: "GET",
-        params,
+        params: params || undefined,
       }),
     }),
 
-    updateCustomer: builder.mutation<any, { id: string; data: any }>({
+    updateCustomer: builder.mutation<CustomerType, { id: string; data: Partial<CustomerType> }>({
       query: ({ id, data }) => ({
         url: `/api/customers/${id}`,
         method: "PATCH",
@@ -18,20 +26,21 @@ export const extendedApi = mainApi.injectEndpoints({
       }),
     }),
 
-    deleteCustomer: builder.mutation<any, string>({
+    deleteCustomer: builder.mutation<void, string>({
       query: (id) => ({
         url: `/api/customers/${id}`,
         method: "DELETE",
       }),
     }),
 
-    getSingleCustomer: builder.query<any, string>({
+    getSingleCustomer: builder.query<CustomerType, string>({
       query: (id) => ({
         url: `/api/customers/${id}`,
         method: "GET",
       }),
     }),
   }),
+  overrideExisting: false,
 });
 
 export const {

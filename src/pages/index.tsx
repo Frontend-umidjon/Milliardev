@@ -9,6 +9,7 @@ import Profile from "./profile/Profile";
 import AdminList from "./adminList/AdminList";
 import { useGetProfileQuery } from "../redux/api/profile.api";
 import Adresses from "./adresses/Adresses";
+import NotFound from "./NotFound/NotFound";
 
 const MainRouter = () => {
   const { data } = useGetProfileQuery({});
@@ -27,7 +28,7 @@ const MainRouter = () => {
               )}
             </Route>
             <Route path="/profile" element={<Profile  />} />
-              <Route path="*" element={<div>404</div>} />
+              <Route path="*" element={<NotFound />} />
           </Route>
         </Route>
       </Routes>

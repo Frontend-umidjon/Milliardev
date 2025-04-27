@@ -1,27 +1,28 @@
 import { mainApi } from ".";
+import { Admin, AdminResponse } from "../../types";
 
 export const adminApi = mainApi.injectEndpoints({
   endpoints: (builder) => ({
-    getAdmins: builder.query<any, void>({
+    getAdmins: builder.query<AdminResponse, void>({
       query: () => "/api/admin",
       providesTags: (result) =>
         result?.data?.payload
           ? [
-              ...result.data.payload.map(({ _id }: { _id: string }) => ({
+              ...result.data.payload.map((admin) => ({
                 type: "ADMIN" as const,
-                id: _id,
+                id: admin._id,
               })),
               { type: "ADMIN", id: "LIST" },
             ]
           : [{ type: "ADMIN", id: "LIST" }],
     }),
 
-    getAdminById: builder.query<any, string>({
+    getAdminById: builder.query<Admin, string>({
       query: (id) => `/api/admin/${id}`,
-      providesTags: (result, error, id) => [{ type: "ADMIN", id }],
+      providesTags: (_, __, id) => [{ type: "ADMIN", id }],
     }),
 
-    createAdmin: builder.mutation<any, any>({
+    createAdmin: builder.mutation<Admin, Admin>({
       query: (newAdmin) => ({
         url: "/api/admin",
         method: "POST",
@@ -30,24 +31,24 @@ export const adminApi = mainApi.injectEndpoints({
       invalidatesTags: [{ type: "ADMIN", id: "LIST" }],
     }),
 
-    updateAdmin: builder.mutation<any, { id: string; [key: string]: any }>({
+    updateAdmin: builder.mutation<Admin, { id: string; data: Partial<Admin> }>({
       query: ({ id, ...data }) => ({
         url: `/api/admin/${id}`,
         method: "PATCH",
         body: data,
       }),
-      invalidatesTags: (result, error, { id }) => [
+      invalidatesTags: (_, __, { id }) => [
         { type: "ADMIN", id },
         { type: "ADMIN", id: "LIST" },
       ],
     }),
 
-    deleteAdmin: builder.mutation<any, string>({
+    deleteAdmin: builder.mutation<void, string>({
       query: (id) => ({
         url: `/api/admin/${id}`,
         method: "DELETE",
       }),
-      invalidatesTags: (result, error, id) => [
+      invalidatesTags: (_, __, id) => [
         { type: "ADMIN", id },
         { type: "ADMIN", id: "LIST" },
       ],

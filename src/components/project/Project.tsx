@@ -1,18 +1,15 @@
 import React from "react";
 import { Card, Typography } from "antd";
 import { EditOutlined } from "@ant-design/icons";
+import { ProjectType } from "../../types";
 
 const { Title, Paragraph } = Typography;
 
+
+
 interface ProjectProps {
-  project: {
-    _id: string;
-    name: string;
-    description: string;
-    link: string;
-    image: string;
-  };
-  onEdit: (project: any) => void;
+  project: ProjectType;
+  onEdit: (project: ProjectType) => void; 
 }
 
 const Project: React.FC<ProjectProps> = ({ project, onEdit }) => {

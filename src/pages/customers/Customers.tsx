@@ -28,19 +28,21 @@ import {
   FaEnvelope,
   FaCalendarAlt,
 } from "react-icons/fa";
+import { CustomerType } from "../../types"; // Импорт типов
 
 const Customers = () => {
   const [filter, setFilter] = useState<"all" | "true" | "false">("all");
 
+  // Передаем фильтр в запрос с правильным значением
   const { data, isLoading, refetch } = useGetCustomersQuery(
-    filter === "all" ? {} : { is_active: filter === "true" } // filtering based on active status
+    filter === "all" ? {} : { is_active: filter === "true" }
   );
 
   const [deleteCustomer] = useDeleteCustomerMutation();
   const [updateCustomer] = useUpdateCustomerMutation();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingCustomer, setEditingCustomer] = useState<any>(null);
+  const [editingCustomer, setEditingCustomer] = useState<CustomerType | null>(null); 
   const [form] = Form.useForm();
 
   const handleDelete = async (id: string) => {
@@ -53,7 +55,7 @@ const Customers = () => {
     }
   };
 
-  const handleEdit = (customer: any) => {
+  const handleEdit = (customer: CustomerType) => { 
     setEditingCustomer(customer);
     setIsModalOpen(true);
   };
@@ -68,14 +70,13 @@ const Customers = () => {
     try {
       const values = await form.validateFields();
       const payload = {
-        id: editingCustomer._id,
+        id: editingCustomer!._id,
         data: values,
       };
       await updateCustomer(payload).unwrap();
       message.success("Mijoz yangilandi");
 
-      // If the status of the customer is updated, refresh the filter to reflect the change
-      if (values.is_active !== editingCustomer.is_active) {
+      if (editingCustomer && values.is_active !== editingCustomer.is_active) {
         setFilter(values.is_active ? "true" : "false");
       }
 
@@ -88,7 +89,7 @@ const Customers = () => {
 
   const { Panel } = Collapse;
 
-  const CustomerPanel = ({ customer }: any) => (
+  const CustomerPanel = ({ customer }: { customer: CustomerType }) => ( 
     <Collapse
       className="border border-gray-200 rounded-lg mb-4 bg-white"
       expandIconPosition="start"
@@ -174,11 +175,15 @@ const Customers = () => {
         <div className="flex justify-center items-center h-40">
           <Spin size="large" tip="Mijozlar yuklanmoqda..." />
         </div>
+      ) : data?.data?.payload?.length === 0 ? (
+        <div className="flex justify-center items-center h-40 text-gray-500">
+          <span>Hozircha mijozlar mavjud emas</span>
+        </div>
       ) : (
         <div>
           {data?.data?.payload
-            .sort((a: any, b: any) => Number(b.is_active) - Number(a.is_active)) // Сортировка: активные вверх
-            .map((customer: any) => (
+            .sort((a: CustomerType, b: CustomerType) => Number(b.is_active) - Number(a.is_active)) // Сортировка: активные вверх
+            .map((customer: CustomerType) => (
               <CustomerPanel key={customer._id} customer={customer} />
             ))}
         </div>

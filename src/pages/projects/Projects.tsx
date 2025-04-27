@@ -4,6 +4,7 @@ import { Row, Col, Spin, Typography, Button, Segmented } from "antd";
 import { PlusOutlined, RocketOutlined } from "@ant-design/icons";
 import Project from "../../components/project/Project";
 import ProjectPopup from "../../components/project-popup/ProjectPopup";
+import { ProjectType } from "../../types";
 
 const { Title } = Typography;
 
@@ -15,14 +16,18 @@ const Projects: React.FC = () => {
       : { is_done: filter === "done" ? true : false }
   );
   const projects = data?.data?.payload || [];
-  const [selectedProject, setSelectedProject] = useState<any | null>(null);
+  const [selectedProject, setSelectedProject] = useState<ProjectType | null>(null);
 
-  const handleEdit = (project: any) => {
+  const handleEdit = (project: ProjectType) => {
     setSelectedProject(project);
   };
 
   const handleCloseModal = () => {
     setSelectedProject(null);
+  };
+
+  const handleNewProject = () => {
+    setSelectedProject({} as ProjectType); // Correctly initializes a new project
   };
 
   if (isLoading) {
@@ -58,7 +63,7 @@ const Projects: React.FC = () => {
         />
 
         <Button
-          onClick={() => setSelectedProject({})}
+          onClick={handleNewProject}
           type="primary"
           icon={<PlusOutlined />}
           className="rounded-lg"
@@ -68,7 +73,7 @@ const Projects: React.FC = () => {
       </div>
 
       <Row gutter={[16, 16]}>
-        {projects.map((project: any) => (
+        {projects.map((project: ProjectType) => (
           <Col
             key={project._id}
             xs={24}
