@@ -33,7 +33,7 @@ const Customers = () => {
   const [filter, setFilter] = useState<"all" | "true" | "false">("all");
 
   const { data, isLoading, refetch } = useGetCustomersQuery(
-    filter === "all" ? {} : { is_done: filter === "true" }
+    filter === "all" ? {} : { is_active: filter === "true" } // filtering based on active status
   );
 
   const [deleteCustomer] = useDeleteCustomerMutation();
@@ -73,6 +73,12 @@ const Customers = () => {
       };
       await updateCustomer(payload).unwrap();
       message.success("Mijoz yangilandi");
+
+      // If the status of the customer is updated, refresh the filter to reflect the change
+      if (values.is_active !== editingCustomer.is_active) {
+        setFilter(values.is_active ? "true" : "false");
+      }
+
       setIsModalOpen(false);
       refetch();
     } catch {
@@ -124,7 +130,8 @@ const Customers = () => {
           </p>
           <p>
             <FaCalendarAlt className="inline mr-2 text-gray-500" />
-            <strong>Ro’yxatdan:</strong> {new Date(customer.createdAt).toLocaleDateString()}
+            <strong>Ro’yxatdan:</strong>{" "}
+            {new Date(customer.createdAt).toLocaleDateString()}
           </p>
         </div>
 
@@ -154,8 +161,8 @@ const Customers = () => {
       <Segmented
         options={[
           { label: "Barchasi", value: "all" },
-          { label: "Jarayonda", value: "false" },
-          { label: "Tugallangan", value: "true" },
+          { label: "Faol emas", value: "false" },
+          { label: "Faol", value: "true" },
         ]}
         value={filter}
         onChange={(val) => setFilter(val as "all" | "true" | "false")}
@@ -169,9 +176,11 @@ const Customers = () => {
         </div>
       ) : (
         <div>
-          {data?.data?.payload?.map((customer: any) => (
-            <CustomerPanel key={customer._id} customer={customer} />
-          ))}
+          {data?.data?.payload
+            .sort((a: any, b: any) => Number(b.is_active) - Number(a.is_active)) // Сортировка: активные вверх
+            .map((customer: any) => (
+              <CustomerPanel key={customer._id} customer={customer} />
+            ))}
         </div>
       )}
 
@@ -184,17 +193,30 @@ const Customers = () => {
         cancelText="Bekor qilish"
       >
         <Form layout="vertical" form={form}>
-          <Form.Item label="Ism" name="first_name" rules={[{ required: true }]}> <Input /> </Form.Item>
-          <Form.Item label="Familiya" name="last_name" rules={[{ required: true }]}> <Input /> </Form.Item>
-          <Form.Item label="Telefon" name="phone_number" rules={[{ required: true }]}> <Input /> </Form.Item>
-          <Form.Item label="Email" name="email"> <Input /> </Form.Item>
-          <Form.Item label="Telegram ID" name="tg_id" rules={[{ required: true }]}> <Input /> </Form.Item>
-          <Form.Item label="Til" name="lang" rules={[{ required: true }]}> <Select>
+          <Form.Item label="Ism" name="first_name" rules={[{ required: true }]}>
+            <Input />
+          </Form.Item>
+          <Form.Item label="Familiya" name="last_name" rules={[{ required: true }]}>
+            <Input />
+          </Form.Item>
+          <Form.Item label="Telefon" name="phone_number" rules={[{ required: true }]}>
+            <Input />
+          </Form.Item>
+          <Form.Item label="Email" name="email">
+            <Input />
+          </Form.Item>
+          <Form.Item label="Telegram ID" name="tg_id" rules={[{ required: true }]}>
+            <Input />
+          </Form.Item>
+          <Form.Item label="Til" name="lang" rules={[{ required: true }]}>
+            <Select>
               <Select.Option value="ru">Rus</Select.Option>
               <Select.Option value="uz">O'zbek</Select.Option>
             </Select>
           </Form.Item>
-          <Form.Item label="Faollik" name="is_active" valuePropName="checked"> <Switch /> </Form.Item>
+          <Form.Item label="Faollik" name="is_active" valuePropName="checked">
+            <Switch />
+          </Form.Item>
         </Form>
       </Modal>
     </div>

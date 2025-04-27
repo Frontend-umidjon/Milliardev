@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { Card, Typography } from "antd";
 import { EditOutlined } from "@ant-design/icons";
 
@@ -16,78 +16,43 @@ interface ProjectProps {
 }
 
 const Project: React.FC<ProjectProps> = ({ project, onEdit }) => {
-  const [hovered, setHovered] = useState(false);
-
   return (
     <Card
       hoverable
       style={{
-        width: 300,
+        width: "100%",
+        maxWidth: 300,
         borderRadius: 16,
+        border: "1px solid #e5e5e5",
         overflow: "hidden",
-        boxShadow: "0 8px 20px rgba(0,0,0,0.1)",
         position: "relative",
       }}
       cover={
-        <div
-          onMouseEnter={() => setHovered(true)}
-          onMouseLeave={() => setHovered(false)}
-          style={{
-            position: "relative",
-            height: 180,
-            overflow: "hidden",
-          }}
+        <a
+          href={project.link}
+          target="_blank"
+          rel="noopener noreferrer"
         >
           <img
             alt={project.name}
             src={`https://api.milliardev.com/uploads/${project.image}`}
             style={{
               width: "100%",
-              height: "100%",
+              height: 180,
               objectFit: "cover",
               borderTopLeftRadius: 16,
               borderTopRightRadius: 16,
             }}
           />
-          {/* Hover Overlay */}
-          {hovered && (
-            <div
-              style={{
-                position: "absolute",
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                backgroundColor: "rgba(0, 0, 0, 0.5)",
-                color: "#fff",
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                borderRadius: 16,
-              }}
-            >
-              <a
-                href={project.link}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  padding: "10px 20px",
-                  backgroundColor: "#fff",
-                  color: "#000",
-                  borderRadius: 8,
-                  textDecoration: "none",
-                  fontWeight: "bold",
-                }}
-              >
-                View
-              </a>
-            </div>
-          )}
-        </div>
+        </a>
       }
     >
-      <Title level={4}>{project.name}</Title>
-      <Paragraph ellipsis={{ rows: 2 }}>{project.description}</Paragraph>
+      <Title level={5} style={{ marginBottom: 8 }}>
+        {project.name}
+      </Title>
+      <Paragraph ellipsis={{ rows: 2 }} style={{ fontSize: 14, color: "#666" }}>
+        {project.description}
+      </Paragraph>
 
       <EditOutlined
         onClick={() => onEdit(project)}
@@ -95,7 +60,7 @@ const Project: React.FC<ProjectProps> = ({ project, onEdit }) => {
           position: "absolute",
           top: 12,
           right: 12,
-          fontSize: 20,
+          fontSize: 18,
           color: "#555",
           cursor: "pointer",
         }}

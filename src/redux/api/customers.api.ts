@@ -2,8 +2,7 @@ import { mainApi } from ".";
 
 export const extendedApi = mainApi.injectEndpoints({
   endpoints: (builder) => ({
-    
-    getCustomers: builder.query<any, { is_done?: boolean } | void>({
+    getCustomers: builder.query<any, { is_active?: boolean } | void>({   // исправлено тут
       query: (params) => ({
         url: "/api/customers",
         method: "GET",
@@ -19,7 +18,6 @@ export const extendedApi = mainApi.injectEndpoints({
       }),
     }),
 
-   
     deleteCustomer: builder.mutation<any, string>({
       query: (id) => ({
         url: `/api/customers/${id}`,
@@ -27,7 +25,6 @@ export const extendedApi = mainApi.injectEndpoints({
       }),
     }),
 
-    
     getSingleCustomer: builder.query<any, string>({
       query: (id) => ({
         url: `/api/customers/${id}`,
