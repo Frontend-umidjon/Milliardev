@@ -31,17 +31,20 @@ export const adminApi = mainApi.injectEndpoints({
       invalidatesTags: [{ type: "ADMIN", id: "LIST" }],
     }),
 
-    updateAdmin: builder.mutation<Admin, { id: string; data: Partial<Admin> }>({
-      query: ({ id, ...data }) => ({
-        url: `/api/admin/${id}`,
-        method: "PATCH",
-        body: data,
-      }),
-      invalidatesTags: (_, __, { id }) => [
-        { type: "ADMIN", id },
-        { type: "ADMIN", id: "LIST" },
-      ],
-    }),
+    updateAdmin: builder.mutation<Admin, { id: string; data: Partial<Admin> }>(
+      {
+        query: ({ id, data }) => ({
+          url: `/api/admin/${id}`,
+          method: "PATCH",
+          body: data,
+        }),
+        invalidatesTags: (_, __, { id }) => [
+          { type: "ADMIN", id },
+          { type: "ADMIN", id: "LIST" },
+        ],
+      }
+    ),
+    
 
     deleteAdmin: builder.mutation<void, string>({
       query: (id) => ({

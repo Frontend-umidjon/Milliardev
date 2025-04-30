@@ -22,13 +22,15 @@ export interface AdminResponse {
   };
 }
 
-export interface AdminFormValues {
+export type AdminFormValues = {
   full_name: string;
   email: string;
   phone_number: string;
+  password: string;
   is_active: boolean;
   is_creator?: boolean;
-}
+};
+
 
 export interface CustomerType {
   _id: string;
@@ -66,5 +68,41 @@ export interface ProjectType {
 export interface ProjectResponse {
   data: {
     payload: ProjectType[];
+  };
+}
+export interface AddressType {
+  id: string;
+  name: string;
+  description: string;
+  phone_number: string;
+  latitude_altitude: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface CreateAddressDto {
+  name: string;
+  description: string;
+  phone_number: string;
+  latitude_altitude: string;
+}
+
+export interface UpdateAddressDto {
+  name?: string;
+  description?: string;
+  phone_number?: string;
+  latitude_altitude?: string;
+}
+export interface ServiceType {
+  _id: string;
+  name: string;
+  description: string;
+  image: string; 
+}
+
+export interface ServiceResponse {
+  success: boolean;
+  data: {
+    payload: ServiceType[];
   };
 }

@@ -5,6 +5,7 @@ import { GrProjects } from "react-icons/gr";
 import { NavLink, Outlet } from "react-router-dom";
 import { useGetProfileQuery } from "../../redux/api/profile.api";
 import { CiLocationOn } from "react-icons/ci";
+import { RiServerFill } from "react-icons/ri";
 
 const Dashboard = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -51,6 +52,9 @@ const Dashboard = () => {
               <FaUsersGear /> Adminlar
             </NavLink>
            )}
+           <NavLink to="services" className={getNavLinkClasses}>
+              <RiServerFill /> Xizmatlar
+            </NavLink>
           </nav>
         </div>
 

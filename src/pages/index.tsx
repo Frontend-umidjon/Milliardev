@@ -10,6 +10,7 @@ import AdminList from "./adminList/AdminList";
 import { useGetProfileQuery } from "../redux/api/profile.api";
 import Adresses from "./adresses/Adresses";
 import NotFound from "./NotFound/NotFound";
+import Services from "./services/Services";
 
 const MainRouter = () => {
   const { data } = useGetProfileQuery({});
@@ -26,6 +27,7 @@ const MainRouter = () => {
               {data?.user.is_creator && (
                 <Route path="/admin-list" element={<AdminList />} />
               )}
+              <Route path="/services" element={<Services />} />
             </Route>
             <Route path="/profile" element={<Profile  />} />
               <Route path="*" element={<NotFound />} />
